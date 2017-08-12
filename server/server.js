@@ -21,22 +21,10 @@ mongoose.connect('mongodb://localhost:27017/TodoApp', { useMongoClient: true });
 // });
 
 // var newTodo = new Todo({
-//     text: 'Cook dinner',
-//     completed: true,
-//     completedAt: 123
-// });
-
-// newTodo.save().then((doc) => {
-//     console.log(JSON.stringify('Saved todo', undefined, 2), doc);
-// }, (e) => {
-//     console.log('Unable to save Todo', e);
-// });
-
-// var otherTodo = new Todo({
 //     text: '  Edit this video  '
 // });
 
-// otherTodo.save().then((doc) => {
+// newTodo.save().then((doc) => {
 //     console.log(JSON.stringify('Saved otherTodo', undefined, 2), doc);
 // }, (e) => {
 //     console.log('Unable to save otherTodo', e);
