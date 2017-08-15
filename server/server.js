@@ -63,7 +63,7 @@ app.get('/todos/:id', (request, response) => {
     });
 });
 
-app.listen(PORT, () => {
+app.listen(port, () => {
     console.log(`Started on port ${port}`);
 });
 
