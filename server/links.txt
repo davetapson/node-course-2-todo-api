@@ -1,0 +1,11 @@
+git status
+git add .
+git commit -m 'message here'
+git commit -am 'message here'
+git push
+
+heroku create
+heroku addons:create mongolab:sandbox
+
+heroku logs
+
