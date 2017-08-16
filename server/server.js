@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
 const {
@@ -90,7 +91,7 @@ app.delete('/todos/:id', (request, response) => {
                 .send();
         }
 
-        response.send({todo});
+        response.send({ todo });
 
     }).catch((e) => {
         response
@@ -101,6 +102,33 @@ app.delete('/todos/:id', (request, response) => {
 
 app.listen(port, () => {
     console.log(`Started on port ${port}`);
+});
+
+app.patch('/todos/:id', (request, response) => {
+    var id = request.params.id;
+    var body = _.pick(request.body, ['text', 'completed']);
+
+    if (!ObjectID.isValid(id)) {
+        return response
+            .status(404)
+            .send();
+    }
+
+    if (_.isBoolean(body.completed) && body.completed) {
+        body.completedAt = new Date().getTime();
+    } else {
+        body.completed = false;
+        body.completedAt = null;
+    }
+
+    Todo.findByIdAndUpdate(id, { $set: body }, { new: true }).then((todo) => {
+        if (!todo) {
+            return response.status(404).send();
+        }
+        response.send({ todo });
+    }).catch((e) => {
+        response.status(400).send();
+    });
 });
 
 module.exports = {
