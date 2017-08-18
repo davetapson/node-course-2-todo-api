@@ -16,8 +16,8 @@ heroku logs
 heroku open
 
 // mongodb
-"C:\Program Files\MongoDB\Server\3.4\bin\mongod.exe" --dbpath C:\Users\davet\mongo-data
+"C:/Program Files/MongoDB/Server/3.4/bin/mongod.exe" --dbpath C:\Users\davet\mongo-data
 
-"C:\Dave Common\Projects\Git\Node\Udemy\6-node-todo-api\"
+"C:/Dave Common/Projects/Git/Node/Udemy/6-node-todo-api"
 
 
