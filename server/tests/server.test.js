@@ -4,29 +4,12 @@ const { ObjectID } = require('mongodb');
 
 const { app } = require('./../server');
 const { Todo } = require('./../models/todo');
+const { 
+    todos, populateTodos,
+    users, populateUsers } = require('./seed/seed.js');
 
-const todos = [
-    {
-        _id: new ObjectID(),
-        text: 'First test todo'
-    },
-    {
-        _id: new ObjectID(),
-        text: 'Second test todo',
-        completed: true,
-        completedAt: 33
-    },
-    {
-        _id: new ObjectID(),
-        text: 'Third test todo'
-    }
-];
-
-beforeEach((done) => {
-    Todo.remove({}).then(() => {
-        return Todo.insertMany(todos);
-    }).then(() => done());
-});
+beforeEach(populateUsers);
+beforeEach(populateTodos);
 
 describe('POST /todos', () => {
     it('should create a new todo', (done) => {
@@ -162,12 +145,12 @@ describe('PATCH /todos/:id', () => {
                 text: text
             })
             .expect(200)
-            .expect ((response) => {
-                 expect(response.body.todo.text).toBe(text);
-                 expect(response.body.todo.completed).toBe(true);
-                 expect(response.body.todo.completedAt).toBeA('number');
-             })
-            .end(done); 
+            .expect((response) => {
+                expect(response.body.todo.text).toBe(text);
+                expect(response.body.todo.completed).toBe(true);
+                expect(response.body.todo.completedAt).toBeA('number');
+            })
+            .end(done);
     });
 
     it('should clear completedAt when todo is not completed', (done) => {
@@ -182,11 +165,11 @@ describe('PATCH /todos/:id', () => {
                 text: text
             })
             .expect(200)
-            .expect ((response) => {
-                 expect(response.body.todo.text).toBe(text);
-                 expect(response.body.todo.completed).toBe(false);
-                 expect(response.body.todo.completedAt).toNotExist();
-             })
+            .expect((response) => {
+                expect(response.body.todo.text).toBe(text);
+                expect(response.body.todo.completed).toBe(false);
+                expect(response.body.todo.completedAt).toNotExist();
+            })
             .end(done);
     });
 })
