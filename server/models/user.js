@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const bcryptjs = require('bcryptjs');
 
 var UserSchema = new mongoose.Schema({
     email: {
@@ -51,6 +52,42 @@ UserSchema.methods.generateAuthToken = function () {
         return token;
     });
 };
+
+UserSchema.statics.findByToken = function (token) {
+    var User = this;
+    var decoded;
+
+    try {
+        decoded = jwt.verify(token, 'abc123');
+    } catch (e) {
+        // return new Promise((resolve, reject)=>{
+        //     reject();
+        // })
+        return Promise.reject('test');
+    };
+
+    return User.findOne({
+        '_id': decoded._id,
+        'tokens.token': token,
+        'tokens.access': 'auth'
+    });
+};
+
+// hash password when changed
+UserSchema.pre('save', function (next) {
+    var user = this;
+
+    if (user.isModified('password')) {
+        bcryptjs.genSalt(10, (error, salt) => {
+            bcryptjs.hash(user.password, salt, (error, hash) => {
+                user.password = hash;
+                next();
+            });
+        });
+    } else {
+        next();
+    }
+});
 
 var User = mongoose.model('User', UserSchema);
 

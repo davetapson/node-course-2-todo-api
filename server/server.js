@@ -133,6 +133,7 @@ app.patch('/todos/:id', (request, response) => {
     });
 });
 
+// sign-up route
 app.post('/users', (request, response) => {
 
     var body = _.pick(request.body, ['email', 'password']);
@@ -146,6 +147,21 @@ app.post('/users', (request, response) => {
         response
             .status(400)
             .send(e);
+    });
+});
+
+app.get('/users/me', (request, response)=>{
+
+    // get x-auth value from header (i.e. token)
+    var token = request.header('x-auth');
+    
+    User.findByToken(token).then((user)=>{
+        if(!user){
+
+        };
+        response.send(user);
+    }).catch((e)=>{
+        response.status(401).send();
     });
 });
 
