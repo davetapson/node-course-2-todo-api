@@ -4,7 +4,8 @@ const { ObjectID } = require('mongodb');
 
 const { app } = require('./../server');
 const { Todo } = require('./../models/todo');
-const { 
+const {User} = require('./../models/user');
+const {
     todos, populateTodos,
     users, populateUsers } = require('./seed/seed.js');
 
@@ -171,5 +172,86 @@ describe('PATCH /todos/:id', () => {
                 expect(response.body.todo.completedAt).toNotExist();
             })
             .end(done);
+    });
+})
+
+describe('GET /users/me', () => {
+    it('should return user if authenticated', (done) => {
+        request(app)
+            .get('/users/me')
+            .set('x-auth', users[0].tokens[0].token)
+            .expect(200)
+            .expect((response) => {
+                expect(response.body._id).toBe(users[0]._id.toHexString());
+                expect(response.body.email).toBe(users[0].email);
+            })
+            .end(done);
+    });
+    it('should return 401 if not authenticated', (done) => {
+        request(app)
+            .get('/users/me')
+            .expect(401)
+            .expect((response)=>{
+                expect(response.body).toEqual({});
+            })
+            .end(done);
+    });
+});
+
+
+// 7:52 in video 94
+describe('POST /users', ()=>{
+    it('should create a user', (done) =>{
+        var email = 'example@example.com';
+        var password = '123abc';
+
+        request(app)
+        .post('/users')
+        .send({email, password})
+        .expect(200)
+        .expect((response)=>{
+            expect(response.headers['x-auth']).toExist();
+            expect(response.body._id).toExist();
+            expect(response.body.email).toExist();
+        })
+        .end((error) => {
+            if (error){
+                return done(error);
+            }
+
+            User.findOne({email}).then((user) => {
+                expect(user).toExist();
+                expect(user.password).toNotBe(password);
+                done();
+            })
+        });
+    });
+    it('should return validation errors if request invalid', (done) =>{
+
+        var email = 'example.example.com';
+        var password = '123ab';
+
+        request(app)
+        .post('/users')
+        .send({email, password})
+        .expect(400)
+        // .expect((response)=>{
+        //     expect(response.headers['x-auth']).toNotExist();
+        //     expect(response.body).toNotExist();
+        // })
+        .end(done);
+    });
+
+    it('should not create user if email in use', (done)=>{
+
+        var email = 'dave@x.com';
+        var password = '123456';
+
+        request(app)
+        .post('/users')
+        .send({email, password})
+        .expect(400)
+        .end(done);
+
     });
 })
