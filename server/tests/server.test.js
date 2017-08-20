@@ -4,7 +4,7 @@ const { ObjectID } = require('mongodb');
 
 const { app } = require('./../server');
 const { Todo } = require('./../models/todo');
-const {User} = require('./../models/user');
+const { User } = require('./../models/user');
 const {
     todos, populateTodos,
     users, populateUsers } = require('./seed/seed.js');
@@ -191,7 +191,7 @@ describe('GET /users/me', () => {
         request(app)
             .get('/users/me')
             .expect(401)
-            .expect((response)=>{
+            .expect((response) => {
                 expect(response.body).toEqual({});
             })
             .end(done);
@@ -200,54 +200,105 @@ describe('GET /users/me', () => {
 
 
 // 7:52 in video 94
-describe('POST /users', ()=>{
-    it('should create a user', (done) =>{
+describe('POST /users', () => {
+    it('should create a user', (done) => {
         var email = 'example@example.com';
         var password = '123abc';
 
         request(app)
-        .post('/users')
-        .send({email, password})
-        .expect(200)
-        .expect((response)=>{
-            expect(response.headers['x-auth']).toExist();
-            expect(response.body._id).toExist();
-            expect(response.body.email).toExist();
-        })
-        .end((error) => {
-            if (error){
-                return done(error);
-            }
-
-            User.findOne({email}).then((user) => {
-                expect(user).toExist();
-                expect(user.password).toNotBe(password);
-                done();
+            .post('/users')
+            .send({ email, password })
+            .expect(200)
+            .expect((response) => {
+                expect(response.headers['x-auth']).toExist();
+                expect(response.body._id).toExist();
+                expect(response.body.email).toExist();
             })
-        });
+            .end((error) => {
+                if (error) {
+                    return done(error);
+                }
+
+                User.findOne({ email }).then((user) => {
+                    expect(user).toExist();
+                    expect(user.password).toNotBe(password);
+                    done();
+                }).catch((e)=>done(e));
+            });
     });
-    it('should return validation errors if request invalid', (done) =>{
+    it('should return validation errors if request invalid', (done) => {
 
         var email = 'example.example.com';
         var password = '123ab';
 
         request(app)
-        .post('/users')
-        .send({email, password})
-        .expect(400)
-        .end(done);
+            .post('/users')
+            .send({ email, password })
+            .expect(400)
+            .end(done);
     });
 
-    it('should not create user if email in use', (done)=>{
+    it('should not create user if email in use', (done) => {
 
         var email = 'dave@x.com';
         var password = '123456';
 
         request(app)
-        .post('/users')
-        .send({email, password})
-        .expect(400)
-        .end(done);
+            .post('/users')
+            .send({ email, password })
+            .expect(400)
+            .end(done);
 
     });
-})
+});
+
+describe('POST /users/login', () => {
+    it('should login user and return auth token', (done) => {
+        request(app)
+        .post('/users/login')
+        .send({
+            email: users[1].email,
+            password: users[1].password
+        })
+        .expect(200)
+        .expect((response)=>{
+            expect(response.headers['x-auth']).toExist();
+        })
+        .end((error, response)=>{
+            if(error){
+                return done(error);
+            }
+
+            User.findById(users[1]._id).then((user)=>{
+                expect(user.tokens[0]).toInclude({
+                    access: 'auth',
+                    token: response.headers['x-auth']
+                });
+                done();
+            }).catch((e)=>done(e));
+        });
+    });
+
+    it('should reject invalid login', (done) => {
+        request(app)
+        .post('/users/login')
+        .send({
+            email: 'a@b',
+            password: '123'
+        })
+        .expect(400)
+        .expect((response)=>{
+            expect(response.headers['x-auth']).toNotExist();
+        })
+        .end((error, response)=>{
+            if(error){
+                return done(error);
+            }
+
+            User.findById(users[1]._id).then((user)=>{
+                expect(user.tokens.length).toBe(0);
+                done();
+            }).catch((e)=>done(e));
+        });
+    });
+});
