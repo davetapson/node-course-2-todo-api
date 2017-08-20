@@ -235,10 +235,6 @@ describe('POST /users', ()=>{
         .post('/users')
         .send({email, password})
         .expect(400)
-        // .expect((response)=>{
-        //     expect(response.headers['x-auth']).toNotExist();
-        //     expect(response.body).toNotExist();
-        // })
         .end(done);
     });
 

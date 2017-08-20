@@ -3,11 +3,11 @@ require('./config/config.js');
 const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
-const {ObjectID} = require('mongodb');
-const {mongoose} = require('./db/mongoose');
+const { ObjectID } = require('mongodb');
+const { mongoose } = require('./db/mongoose');
 
-const {Todo} = require('./models/todo');
-const {User} = require('./models/user');
+const { Todo } = require('./models/todo');
+const { User } = require('./models/user');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -142,18 +142,32 @@ app.post('/users', (request, response) => {
     });
 });
 
-app.get('/users/me', (request, response)=>{
+app.get('/users/me', (request, response) => {
 
     // get x-auth value from header (i.e. token)
     var token = request.header('x-auth');
-    
-    User.findByToken(token).then((user)=>{
-        if(!user){
+
+    User.findByToken(token).then((user) => {
+        if (!user) {
 
         };
         response.send(user);
-    }).catch((e)=>{
+    }).catch((e) => {
         response.status(401).send();
+    });
+});
+
+// Login Route
+// POST /users/login{email, password}
+app.post('/users/login', (request, response) => {
+    var body = _.pick(request.body, ['email', 'password']);
+
+    User.findByCredentials(body.email, body.password).then((user) => {
+        return user.generateAuthToken().then((token) => {
+            response.header('x-auth', token).send(user);
+        });        
+    }).catch((e) => {
+        response.status(400).send();
     });
 });
 
