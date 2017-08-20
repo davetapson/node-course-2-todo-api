@@ -8,6 +8,7 @@ const { mongoose } = require('./db/mongoose');
 
 const { Todo } = require('./models/todo');
 const { User } = require('./models/user');
+const {authenticate} = require('./middleware/authenticate');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -142,19 +143,8 @@ app.post('/users', (request, response) => {
     });
 });
 
-app.get('/users/me', (request, response) => {
-
-    // get x-auth value from header (i.e. token)
-    var token = request.header('x-auth');
-
-    User.findByToken(token).then((user) => {
-        if (!user) {
-
-        };
-        response.send(user);
-    }).catch((e) => {
-        response.status(401).send();
-    });
+app.get('/users/me', authenticate, (request, response) => {
+    response.send(request.user);
 });
 
 // Login Route
@@ -167,6 +157,17 @@ app.post('/users/login', (request, response) => {
             response.header('x-auth', token).send(user);
         });        
     }).catch((e) => {
+        response.status(400).send();
+    });
+});
+
+// Logout Route
+// POST /users/delete
+app.delete('/users/me/token', //authenticate, 
+(request, response)=>{
+    request.user.removeToken(request.token).then(()=>{
+        response.status(200).send();
+    }, () =>{
         response.status(400).send();
     });
 });
