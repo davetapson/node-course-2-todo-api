@@ -143,6 +143,7 @@ app.post('/users', (request, response) => {
     });
 });
 
+// Authenticated get me Route
 app.get('/users/me', authenticate, (request, response) => {
     response.send(request.user);
 });
@@ -163,8 +164,7 @@ app.post('/users/login', (request, response) => {
 
 // Logout Route
 // POST /users/delete
-app.delete('/users/me/token', //authenticate, 
-(request, response)=>{
+app.delete('/users/me/token', authenticate, (request, response)=>{
     request.user.removeToken(request.token).then(()=>{
         response.status(200).send();
     }, () =>{
